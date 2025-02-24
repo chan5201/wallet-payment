@@ -1,0 +1,84 @@
+name: Laravel CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testing_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: mbstring, pdo, pdo_mysql, xml
+          tools: composer, php-cs-fixer
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Set Up Environment
+        run: cp .env.example .env
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Run Migrations
+        run: php artisan migrate --force
+
+      - name: Run PHPUnit Tests
+        run: vendor/bin/phpunit --testdox
+
+  deploy:
+    name: Deploy to Server
+    needs: tests
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/wallet-payment
+            git pull origin main
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+            php artisan migrate --force
+            php artisan queue:restart
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan config:cache
+            php artisan route:cache
+            sudo systemctl restart php8.3-fpm
