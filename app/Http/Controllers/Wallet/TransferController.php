@@ -82,7 +82,7 @@ class TransferController extends Controller
             });
         } Catch (\Throwable $exception) {
             Log::error('Transfer Order Failed', [$exception->getMessage(), $exception->getFile(), $exception->getLine()]);
-            return $this->responseError('Failed to submit the request', [], 500);
+            return $this->responseError('Failed to submit the request'.$exception->getFile(). $exception->getLine(), [], 500);
         }
     }
 
