@@ -22,7 +22,6 @@ class TransferStatusLog
      */
     public function handle(TransferStatusUpdated $event)
     {
-//        Log::info("Transaction #{$event->transaction->id} status changed from {$event->oldStatus} to {$event->newStatus}");
-        Log::info("Transaction #{$event->transaction->id} status updated.");
+        Log::info("Transaction #{$event->transaction->id} status changed from {$event->oldStatus} to {$event->newStatus}");
     }
 }
