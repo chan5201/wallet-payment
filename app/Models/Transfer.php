@@ -21,7 +21,7 @@ class Transfer extends Model
         parent::boot();
 
         static::updating(function ($transaction) {
-            event(new TransferStatusUpdated($transaction, $transaction->getOriginal('status'), $transaction->status));
+//            event(new TransferStatusUpdated($transaction, $transaction->getOriginal('status'), $transaction->status));
         });
     }
 
