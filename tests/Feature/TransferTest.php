@@ -20,7 +20,7 @@ class TransferTest extends TestCase
             'receiver_id' => $receiver->email,
             'amount' => 500,
         ]);
-
+        dd($response->json());
         $response->assertStatus(201)
             ->assertJsonStructure([
                 'status',
