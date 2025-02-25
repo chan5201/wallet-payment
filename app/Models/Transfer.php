@@ -22,7 +22,7 @@ class Transfer extends Model
 
         static::updating(function ($transaction) {
             if ($transaction->isDirty('status')) {
-                event(new TransferStatusUpdated($transaction, $transaction->getOriginal('status'), $transaction->status));
+//                event(new TransferStatusUpdated($transaction, $transaction->getOriginal('status'), $transaction->status));
             }
         });
     }
